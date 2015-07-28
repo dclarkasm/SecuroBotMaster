@@ -17,6 +17,7 @@ import android.view.View;
  *
  * @see SystemUiHider
  */
+//some comment
 public class SecuroBotMasterMain extends Activity {
     /**
      * Whether or not the system UI should be auto-hidden after

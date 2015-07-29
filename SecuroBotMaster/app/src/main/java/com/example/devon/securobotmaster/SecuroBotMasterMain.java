@@ -13,40 +13,30 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-import android.widget.ViewAnimator;
+
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Random;
 
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
+import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOActivity;
 
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- *
- * @see SystemUiHider
- */
-//some comment
 public class SecuroBotMasterMain extends IOIOActivity {
-    private ToggleButton button_;
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -75,12 +65,7 @@ public class SecuroBotMasterMain extends IOIOActivity {
      */
     private SystemUiHider mSystemUiHider;
 
-    // Whether the Log Fragment is currently shown
-    private boolean mLogShown;
-
-
-
-    private static final String TAG = "BluetoothChatFragment";
+    private static final String TAG = "Bluetooth";
 
     // Intent request codes
     private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
@@ -107,14 +92,29 @@ public class SecuroBotMasterMain extends IOIOActivity {
      */
     private BluetoothChatService mChatService = null;
 
-    Button send;
+    //**********************************************
+    ImageView leftEye;
+    ImageView rightEye;
+    int lEResource;
+    int rEResource;
+    private Handler mHandler;
+    Random r = new Random();
+    String currentAction = "";
+    boolean actionEnable = true;
+
+    public static final int ACTION_TWEET = 0;
+    public static final int ACTION_RSS = 1;
+    public static final int ACTION_JOKE = 2;
+    public static final int ACTION_QUIZ = 3;
+    public static final int ACTION_PAGE = 4;
+    public static final int ACTION_TIP = 5;
+    //**********************************************
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_securo_bot_master_main);
-        button_ = (ToggleButton) findViewById(R.id.button);
 
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
         final View contentView = findViewById(R.id.fullscreen_content);
@@ -181,7 +181,7 @@ public class SecuroBotMasterMain extends IOIOActivity {
         // Remember that you should never show the action bar if the
         // status bar is hidden, so hide that too if necessary.
         ActionBar actionBar = getActionBar();
-        actionBar.hide();
+        if(actionBar!=null) actionBar.hide();
 
 
 //**************************************************************************************************
@@ -204,19 +204,11 @@ public class SecuroBotMasterMain extends IOIOActivity {
             // Otherwise, setup the chat session
         } else if (mChatService == null) {
             // Initialize the BluetoothChatService to perform bluetooth connections
-            mChatService = new BluetoothChatService(this, mHandler);
+            mChatService = new BluetoothChatService(this, BTHandler);
 
             // Initialize the buffer for outgoing messages
             mOutStringBuffer = new StringBuffer("");
         }
-
-        send = (Button) findViewById(R.id.send_button);
-        send.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMessage("This is a test message!");
-            }
-        });
 
         //at this point you could make the device discoverable, but lets just assume
         //we are using already paired devices for security reasons.
@@ -231,8 +223,67 @@ public class SecuroBotMasterMain extends IOIOActivity {
         Intent serverIntent = new Intent(getActivity(), DeviceListActivity.class);
         startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_INSECURE);
          */
+
+
+
+//**************************************************************************************************
+                                //SecuroBot setup stuff
+//**************************************************************************************************
+        //left
+        leftEye = (ImageView) findViewById(R.id.leftEye);
+        lEResource = R.drawable.blueeyesopenleft;
+        leftEye.setImageResource(lEResource);
+        //right
+        rightEye = (ImageView) findViewById(R.id.rightEye);
+        rEResource = R.drawable.blueeyesopenright;
+        rightEye.setImageResource(rEResource);
+
+        mHandler = new Handler();
+
+        startRepeatingTask();
     }
 
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
+        // Trigger the initial hide() shortly after the activity has been
+        // created, to briefly hint to the user that UI controls
+        // are available.
+        delayedHide(100);
+    }
+
+    //Touch listener to use for in-layout UI controls to delay hiding the
+    //system UI. This is to prevent the jarring behavior of controls going away
+    //while interacting with activity UI.
+    View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            if (AUTO_HIDE) {
+                delayedHide(AUTO_HIDE_DELAY_MILLIS);
+            }
+            return false;
+        }
+    };
+
+    Handler mHideHandler = new Handler();
+    Runnable mHideRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mSystemUiHider.hide();
+        }
+    };
+
+    //Schedules a call to hide() in [delay] milliseconds, canceling any
+    //previously scheduled calls.
+    private void delayedHide(int delayMillis) {
+        mHideHandler.removeCallbacks(mHideRunnable);
+        mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+//**************************************************************************************************
+                                    //Bluetooth stuff (non IOIO related BT)
+//**************************************************************************************************
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -294,66 +345,17 @@ public class SecuroBotMasterMain extends IOIOActivity {
     }
 
     /**
-     * Updates the status on the action bar.
-     *
-     * @param resId a string resource ID
-     */
-    private void setStatus(int resId) {
-        /*
-        final ActionBar actionBar = this.getActionBar();
-        if (null == actionBar) {
-            return;
-        }
-        actionBar.setSubtitle(resId);
-        */
-    }
-
-    /**
-     * Updates the status on the action bar.
-     *
-     * @param subTitle status
-     */
-    private void setStatus(CharSequence subTitle) {
-        final ActionBar actionBar = this.getActionBar();
-        /*
-        if (null == actionBar) {
-            return;
-        }
-        actionBar.setSubtitle(subTitle);
-        */
-    }
-
-
-    /**
      * The Handler that gets information back from the BluetoothChatService
      */
-    private final Handler mHandler = new Handler() {
+    private final Handler BTHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             //FragmentActivity activity = getActivity();
             switch (msg.what) {
-                /*
-                case Constants.MESSAGE_STATE_CHANGE:
-                    switch (msg.arg1) {
-                        case BluetoothChatService.STATE_CONNECTED:
-                            setStatus("Connected to " + mConnectedDeviceName);
-                            //mConversationArrayAdapter.clear();
-                            break;
-                        case BluetoothChatService.STATE_CONNECTING:
-                            setStatus("Connecting...");
-                            break;
-                        case BluetoothChatService.STATE_LISTEN:
-                        case BluetoothChatService.STATE_NONE:
-                            setStatus("Not connected.");
-                            break;
-                    }
-                    break;
-                    */
                 case Constants.MESSAGE_WRITE:
                     byte[] writeBuf = (byte[]) msg.obj;
                     // construct a string from the buffer
                     String writeMessage = new String(writeBuf);
-                    //mConversationArrayAdapter.add("Me:  " + writeMessage);
                     Log.d("Bluetooth", "Wrote message: " + writeMessage);
                     Toast.makeText(SecuroBotMasterMain.this, "Wrote message: " + writeMessage, Toast.LENGTH_SHORT).show();
                     break;
@@ -361,9 +363,9 @@ public class SecuroBotMasterMain extends IOIOActivity {
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
-                    //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
                     Log.d("Bluetooth", "Read message: " + readMessage);
-                    Toast.makeText(SecuroBotMasterMain.this, "Read message: " + readMessage, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(SecuroBotMasterMain.this, "Read message: " + readMessage, Toast.LENGTH_SHORT).show();
+                    processMessage(readMessage);
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name
@@ -400,7 +402,7 @@ public class SecuroBotMasterMain extends IOIOActivity {
                 if (resultCode == Activity.RESULT_OK) {
                     // Bluetooth is now enabled, so set up a chat session
                     // Initialize the BluetoothChatService to perform bluetooth connections
-                    mChatService = new BluetoothChatService(this, mHandler);
+                    mChatService = new BluetoothChatService(this, BTHandler);
 
                     // Initialize the buffer for outgoing messages
                     mOutStringBuffer = new StringBuffer("");
@@ -431,47 +433,90 @@ public class SecuroBotMasterMain extends IOIOActivity {
     }
 
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayedHide(100);
+    private void processMessage(String message) {
+        if(!actionEnable) {
+            switch(message) {
+                case "CC":
+                    Log.d(TAG, currentAction + " Action Completed.");
+                    Toast.makeText(this, currentAction + " Action Completed.",
+                            Toast.LENGTH_SHORT).show();
+                    actionEnable = true;
+                    mHandler.removeCallbacks(interactionTimer);
+                    mHandler.removeCallbacks(timerInterrupt);
+                    break;
+                case "RS":
+                    mHandler.removeCallbacks(interactionTimer);
+                    mHandler.removeCallbacks(timerInterrupt);
+                    interactionTimer.run();
+                    Log.d("Timer", "Touch sensed. Timer was reset.");
+                    break;
+                default:
+                    Log.d("Bluetooth", "Unknown Response: " + message);
+                    break;
+            }
+        }
     }
 
+//**************************************************************************************************
+                                        //Threads
+//**************************************************************************************************
+    void startRepeatingTask() {
+        runnable.run();
+    }
 
+    void stopRepeatingTask() {
+        mHandler.removeCallbacks(runnable);
+    }
 
-     //Touch listener to use for in-layout UI controls to delay hiding the
-     //system UI. This is to prevent the jarring behavior of controls going away
-     //while interacting with activity UI.
-
-    View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (AUTO_HIDE) {
-                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
-            return false;
-        }
-    };
-
-    Handler mHideHandler = new Handler();
-    Runnable mHideRunnable = new Runnable() {
+    Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            mSystemUiHider.hide();
+            int il = r.nextInt(0+100);
+            int ir = r.nextInt(0+100);
+
+            if(il>50) {
+                if(lEResource == R.drawable.blueeyesclosedleft) {
+                    lEResource = R.drawable.blueeyesopenleft;
+                }
+                else {
+                    lEResource = R.drawable.blueeyesclosedleft;
+                }
+                leftEye.setImageResource(lEResource);
+            }
+
+            if(ir>50) {
+                if(rEResource == R.drawable.blueeyesclosedright) {
+                    rEResource = R.drawable.blueeyesopenright;
+                }
+                else rEResource = R.drawable.blueeyesclosedright;
+                rightEye.setImageResource(rEResource);
+            }
+            mHandler.postDelayed(runnable, 5000);
         }
     };
 
-     //Schedules a call to hide() in [delay] milliseconds, canceling any
-     //previously scheduled calls.
-    private void delayedHide(int delayMillis) {
-        mHideHandler.removeCallbacks(mHideRunnable);
-        mHideHandler.postDelayed(mHideRunnable, delayMillis);
-    }
+    Runnable interactionTimer = new Runnable(){
+        @Override
+        public void run() {
+            Log.d("Timer", "Called timer");
+            actionEnable = false;
+            Log.d("Timer", "Delay Started...");
+            mHandler.postDelayed(timerInterrupt, 40000);    //set this timer for a little bit longer in case of delay
+        }
+    };
 
+    Runnable timerInterrupt = new Runnable() {
+        @Override
+        public void run() {
+            actionEnable = true;
+            mHandler.removeCallbacks(interactionTimer);
+            Log.d("Timer", "Delay Stopped.");
+        }
+    };
+
+//**************************************************************************************************
+                                //Android IOIO stuff
+//**************************************************************************************************
     /**
      * This is the thread on which all the IOIO activity happens. It will be run
      * every time the application is resumed and aborted when it is paused. The
@@ -482,6 +527,9 @@ public class SecuroBotMasterMain extends IOIOActivity {
     class Looper extends BaseIOIOLooper {
         /** The on-board LED. */
         private DigitalOutput led_;
+        private IRSensor iRSensors = new IRSensor(33);
+        private PwmOutput pwm;
+        int newPos, currentPos;
 
         /**
          * Called every time a connection with IOIO has been established.
@@ -490,13 +538,20 @@ public class SecuroBotMasterMain extends IOIOActivity {
          * @throws ConnectionLostException
          *             When IOIO connection is lost.
          *
-         * //@see ioio.lib.util.IOIOLooper#setup()
+         * @see ioio.lib.util.IOIOLooper
          */
         @Override
-        protected void setup() throws ConnectionLostException {
+        protected void setup() throws ConnectionLostException, InterruptedException {
             showVersions(ioio_, "IOIO connected!");
             led_ = ioio_.openDigitalOutput(0, true);
-            enableUi(true);
+            iRSensors.input = ioio_.openAnalogInput(iRSensors.pin);
+            initIR();
+
+            try {
+                pwm= ioio_.openPwmOutput(35, 100);  //new DigitalOutput.Spec(35, DigitalOutput.Spec.Mode.OPEN_DRAIN)
+            } catch (ConnectionLostException e) {
+                Log.d("Connection Lost", "IO Connection Lost");
+            }
         }
 
         /**
@@ -511,8 +566,94 @@ public class SecuroBotMasterMain extends IOIOActivity {
          */
         @Override
         public void loop() throws ConnectionLostException, InterruptedException {
-            led_.write(!button_.isChecked());
+            int re = r.nextInt(100-0); //random number between 0 and 100 for rotation enable
+            int ra = r.nextInt(3-0); //random number between 0 and 100 for rotation angle
+
+            if(actionEnable){
+                if(re <= 1) {  //% chance that the head will rotate
+                    switch(ra){
+                        case 0: newPos = 1000; break;    //limit 600
+                        case 1: newPos = 1550; break;
+                        case 2: newPos = 2000; break;   //limit 2450
+                        default: break;
+                    }
+
+                    if(newPos != currentPos)
+                    {
+                        led_.write(true);
+                        pwm.setPulseWidth(newPos);
+                        currentPos = newPos;
+                        Log.d("ROTATE", "Moving to position: " + newPos + "...");
+                        Thread.sleep(1000);
+                        Log.d("ROTATE", "At position: " + newPos);
+                        initIR();
+                    }
+                }
+                else{
+                    float measVal = iRSensors.input.read();
+                    float measVolt = iRSensors.input.getVoltage();
+                    if(iRSensors.motionDetect(measVal, measVolt)) {
+                        led_.write(false);
+                        Log.d("MOTION", "Detected motion!"
+                                        + " BaseVal: " + iRSensors.baseValue + "/" + measVal +
+                                        ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
+                        );
+
+                        int rc = r.nextInt(6-0);
+                        switch(rc){
+                            case ACTION_PAGE:
+                                currentAction = "Webpage";
+                                sendMessage(currentAction);
+                                interactionTimer.run();
+                                break;
+                            case ACTION_QUIZ:
+                                currentAction = "Quiz";
+                                sendMessage(currentAction);
+                                interactionTimer.run();
+                                break;
+                            case ACTION_JOKE:
+                                currentAction = "Joke";
+                                sendMessage(currentAction);
+                                interactionTimer.run();
+                                break;
+                            case ACTION_TIP:
+                                currentAction = "Tip";
+                                sendMessage(currentAction);
+                                interactionTimer.run();
+                                break;
+                            case ACTION_RSS:
+                                currentAction = "RSS";
+                                sendMessage(currentAction);
+                                interactionTimer.run();
+                                break;
+                            case ACTION_TWEET:
+                                currentAction = "Tweet";
+                                sendMessage(currentAction);
+                                interactionTimer.run();
+                                break;
+                            default: break;
+                        }
+
+                        Log.d("IR SENSORS", "reinitializing...");
+                        initIR();
+                    }
+                    else led_.write(true);
+                }
+            } else initIR();
             Thread.sleep(100);
+        }
+
+        public void initIR() throws ConnectionLostException, InterruptedException {
+            float baseVal=0f, baseVolt=0f;
+
+            for(int i=0; i<iRSensors.iSamples; i++) {
+                baseVal += iRSensors.input.read();
+                baseVolt += iRSensors.input.getVoltage();
+            }
+            iRSensors.initialize(baseVal / iRSensors.iSamples, baseVolt / iRSensors.iSamples);
+/*
+            Log.d("INIT IR", "Base Val: " + baseVal/iRSensors.iSamples +
+                    ", base Volt: " + baseVolt/iRSensors.iSamples);*/
         }
 
         /**
@@ -522,7 +663,6 @@ public class SecuroBotMasterMain extends IOIOActivity {
          */
         @Override
         public void disconnected() {
-            enableUi(false);
             toast("IOIO disconnected");
         }
 
@@ -566,26 +706,6 @@ public class SecuroBotMasterMain extends IOIOActivity {
             @Override
             public void run() {
                 Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    private int numConnected_ = 0;
-
-    private void enableUi(final boolean enable) {
-        // This is slightly trickier than expected to support a multi-IOIO use-case.
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (enable) {
-                    if (numConnected_++ == 0) {
-                        button_.setEnabled(true);
-                    }
-                } else {
-                    if (--numConnected_ == 0) {
-                        button_.setEnabled(false);
-                    }
-                }
             }
         });
     }

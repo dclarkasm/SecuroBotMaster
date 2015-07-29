@@ -21,20 +21,17 @@
             android:layout_width="match_parent"
             android:layout_height="0px" />
 
-        <Button
+        <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Send Message"
-            android:id="@+id/send_button"
-            android:layout_gravity="center" />
+            android:layout_height="match_parent"
+            android:id="@+id/leftEye"
+            android:layout_gravity="left|center_vertical" />
 
-        <ToggleButton
+        <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New ToggleButton"
-            android:id="@+id/button"
-            android:layout_gravity="center_horizontal|top" />
+            android:layout_height="match_parent"
+            android:id="@+id/rightEye"
+            android:layout_gravity="right|center_vertical"/>
 
     </FrameLayout>
-
 </FrameLayout>

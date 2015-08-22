@@ -99,7 +99,7 @@ public class SecuroBotMasterMain extends IOIOActivity {
     int rEResource;
     private Handler mHandler;
     Random r = new Random();
-    String currentAction = "";
+    //String currentAction = "";
     boolean actionEnable = true;
 
     public static final int ACTION_TWEET = 0;
@@ -437,8 +437,8 @@ public class SecuroBotMasterMain extends IOIOActivity {
         if(!actionEnable) {
             switch(message) {
                 case "CC":
-                    Log.d(TAG, currentAction + " Action Completed.");
-                    Toast.makeText(this, currentAction + " Action Completed.",
+                    Log.d(TAG, "Action Completed.");
+                    Toast.makeText(this, "Action Completed.",
                             Toast.LENGTH_SHORT).show();
                     actionEnable = true;
                     mHandler.removeCallbacks(interactionTimer);
@@ -599,6 +599,10 @@ public class SecuroBotMasterMain extends IOIOActivity {
                                         ", BaseVolt: " + iRSensors.baseVolt + "/" + measVolt
                         );
 
+                        sendMessage("StartActivity");
+                        interactionTimer.run();
+
+                        /*
                         int rc = r.nextInt(6-0);
                         switch(rc){
                             case ACTION_PAGE:
@@ -632,7 +636,7 @@ public class SecuroBotMasterMain extends IOIOActivity {
                                 interactionTimer.run();
                                 break;
                             default: break;
-                        }
+                        }*/
 
                         Log.d("IR SENSORS", "reinitializing...");
                         initIR();

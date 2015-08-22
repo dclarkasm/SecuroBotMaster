@@ -2,11 +2,14 @@ Twitter accounts:
 Gmail: UNHSecuroBot@gmail.com
 password: nhBlue22
 
-Gmail: unhsbotmanager@gmail.com
-password: nhBlue22
+Gmails for tablets:
+unhsecurobotmaster@gmail.com
+unhsecurobotslave@gmail.com
+passwords: nhBlue22
+
+Tablet Password: 0652
 
 UNHSecuroBot, nhBlue22
-UNHSBotManager, nhBlue22
 
 TODO: (Orginized in order of priority (most important first
 - add fact class - Mon 7/27

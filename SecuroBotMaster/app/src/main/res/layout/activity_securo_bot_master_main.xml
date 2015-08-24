@@ -23,15 +23,9 @@
 
         <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:id="@+id/leftEye"
-            android:layout_gravity="left|center_vertical" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:id="@+id/rightEye"
-            android:layout_gravity="right|center_vertical"/>
+            android:layout_height="wrap_content"
+            android:id="@+id/eyes"
+            android:layout_gravity="center" />
 
     </FrameLayout>
 </FrameLayout>

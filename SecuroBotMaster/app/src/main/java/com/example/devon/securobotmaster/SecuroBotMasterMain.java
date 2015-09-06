@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -51,6 +52,9 @@ public class SecuroBotMasterMain extends Activity {
     ImageView eyesView;
     private Handler mHandler;
     Random r = new Random();
+    int eyeChooser = 0;
+    int openEyeResource = R.drawable.ava_eyes_open;
+    int closedEyeResource = R.drawable.ava_eyes_closed;
     //**********************************************
 
     @Override
@@ -108,6 +112,9 @@ public class SecuroBotMasterMain extends Activity {
         contentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                Log.d("eyes", "touch");
+                changeEyes();
                 if (TOGGLE_ON_CLICK) {
                     mSystemUiHider.toggle();
                 } else {
@@ -162,6 +169,9 @@ public class SecuroBotMasterMain extends Activity {
     View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
+
+            Log.d("eyes", "touch");
+            changeEyes();
             if (AUTO_HIDE) {
                 delayedHide(AUTO_HIDE_DELAY_MILLIS);
             }
@@ -194,39 +204,11 @@ public class SecuroBotMasterMain extends Activity {
     void stopRepeatingTask() {
         mHandler.removeCallbacks(eyesOpen);
     }
-/*
-    Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            int il = r.nextInt(0+100);
-            int ir = r.nextInt(0+100);
-
-            if(il>50) {
-                if(lEResource == R.drawable.blueeyesclosedleft) {
-                    lEResource = R.drawable.blueeyesopenleft;
-                }
-                else {
-                    lEResource = R.drawable.blueeyesclosedleft;
-                }
-                leftEye.setImageResource(lEResource);
-            }
-
-            if(ir>50) {
-                if(rEResource == R.drawable.blueeyesclosedright) {
-                    rEResource = R.drawable.blueeyesopenright;
-                }
-                else rEResource = R.drawable.blueeyesclosedright;
-                rightEye.setImageResource(rEResource);
-            }
-            mHandler.postDelayed(runnable, 5000);
-        }
-    };
-    */
 
     Runnable eyesOpen = new Runnable() {
         @Override
         public void run() {
-            eyesView.setImageResource(R.drawable.blueeyesopen);
+            eyesView.setImageResource(openEyeResource);   //eyesOpenChanger()
 
             int blinkEyes = r.nextInt(100-0);
             if(blinkEyes>=90) blink.run();
@@ -238,8 +220,55 @@ public class SecuroBotMasterMain extends Activity {
         @Override
         public void run() {
             mHandler.removeCallbacks(eyesOpen);
-            eyesView.setImageResource(R.drawable.blueeyesclosed);
+            eyesView.setImageResource(closedEyeResource);
             mHandler.postDelayed(eyesOpen, 100);
         }
     };
+
+    public void changeEyes(){
+        Log.d("eyes", "eyeChooser: " + eyeChooser);
+        if(eyeChooser==5) {
+            eyeChooser = 0;
+        }
+        else eyeChooser++;
+
+        switch(eyeChooser) {
+            case 0:
+                openEyeResource = R.drawable.ava_eyes_open;
+                closedEyeResource = R.drawable.ava_eyes_closed;
+                break;
+            case 1:
+                openEyeResource = R.drawable.ed_eyes_open;
+                closedEyeResource = R.drawable.ed_eyes_closed;
+                break;
+            case 2:
+                openEyeResource = R.drawable.blueeyesopen;
+                closedEyeResource = R.drawable.blueeyesclosed;
+                break;
+            case 3:
+                openEyeResource = R.drawable.center_blue;
+                closedEyeResource = R.drawable.closed_blue;
+                break;
+            case 4:
+                openEyeResource = R.drawable.center_grey;
+                closedEyeResource = R.drawable.closed_grey;
+                break;
+            case 5:
+                openEyeResource = R.drawable.center_white;
+                closedEyeResource = R.drawable.closed_white;
+                break;
+            default:
+                openEyeResource = R.drawable.ava_eyes_open;
+                closedEyeResource = R.drawable.ava_eyes_closed;
+                break;
+        }
+        eyesView.setImageResource(openEyeResource);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.d("eyes", "touch");
+        changeEyes();
+        return false;
+    }
 }

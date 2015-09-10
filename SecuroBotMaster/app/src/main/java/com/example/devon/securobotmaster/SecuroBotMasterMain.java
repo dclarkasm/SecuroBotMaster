@@ -53,8 +53,8 @@ public class SecuroBotMasterMain extends Activity {
     private Handler mHandler;
     Random r = new Random();
     int eyeChooser = 0;
-    int openEyeResource = R.drawable.ava_eyes_open;
-    int closedEyeResource = R.drawable.ava_eyes_closed;
+    int openEyeResource = R.drawable.center_white;
+    int closedEyeResource = R.drawable.closed_white;
     //**********************************************
 
     @Override
@@ -114,7 +114,6 @@ public class SecuroBotMasterMain extends Activity {
             public void onClick(View view) {
 
                 Log.d("eyes", "touch");
-                changeEyes();
                 if (TOGGLE_ON_CLICK) {
                     mSystemUiHider.toggle();
                 } else {
@@ -171,7 +170,6 @@ public class SecuroBotMasterMain extends Activity {
         public boolean onTouch(View view, MotionEvent motionEvent) {
 
             Log.d("eyes", "touch");
-            changeEyes();
             if (AUTO_HIDE) {
                 delayedHide(AUTO_HIDE_DELAY_MILLIS);
             }
@@ -209,6 +207,7 @@ public class SecuroBotMasterMain extends Activity {
         @Override
         public void run() {
             eyesView.setImageResource(openEyeResource);   //eyesOpenChanger()
+            changeEyes();
 
             int blinkEyes = r.nextInt(100-0);
             if(blinkEyes>=90) blink.run();
@@ -225,50 +224,60 @@ public class SecuroBotMasterMain extends Activity {
         }
     };
 
+
     public void changeEyes(){
-        Log.d("eyes", "eyeChooser: " + eyeChooser);
-        if(eyeChooser==5) {
-            eyeChooser = 0;
-        }
-        else eyeChooser++;
+        int eyeChooser = r.nextInt(30-0);
 
         switch(eyeChooser) {
             case 0:
-                openEyeResource = R.drawable.ava_eyes_open;
-                closedEyeResource = R.drawable.ava_eyes_closed;
+                openEyeResource = R.drawable.center_white;
                 break;
             case 1:
-                openEyeResource = R.drawable.ed_eyes_open;
-                closedEyeResource = R.drawable.ed_eyes_closed;
+                openEyeResource = R.drawable.down_white;
                 break;
             case 2:
-                openEyeResource = R.drawable.blueeyesopen;
-                closedEyeResource = R.drawable.blueeyesclosed;
+                openEyeResource = R.drawable.left_white;
                 break;
             case 3:
-                openEyeResource = R.drawable.center_blue;
-                closedEyeResource = R.drawable.closed_blue;
+                openEyeResource = R.drawable.right_white;
                 break;
             case 4:
-                openEyeResource = R.drawable.center_grey;
-                closedEyeResource = R.drawable.closed_grey;
-                break;
-            case 5:
-                openEyeResource = R.drawable.center_white;
-                closedEyeResource = R.drawable.closed_white;
+                openEyeResource = R.drawable.up_white;
                 break;
             default:
-                openEyeResource = R.drawable.ava_eyes_open;
-                closedEyeResource = R.drawable.ava_eyes_closed;
+                openEyeResource = R.drawable.center_white;
                 break;
         }
         eyesView.setImageResource(openEyeResource);
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.d("eyes", "touch");
-        changeEyes();
-        return false;
+
+    /*
+    public void changeEyes(){
+        Log.d("eyes", "eyeChooser: " + eyeChooser);
+        int eyeChooser = r.nextInt(6-0);
+
+        switch(eyeChooser) {
+            case 0:
+                openEyeResource = R.drawable.center_new;
+                break;
+            case 1:
+                openEyeResource = R.drawable.left_new;
+                break;
+            case 2:
+                openEyeResource = R.drawable.left_new;
+                break;
+            case 3:
+                openEyeResource = R.drawable.right_new;
+                break;
+            case 4:
+                openEyeResource = R.drawable.up_new;
+                break;
+            default:
+                openEyeResource = R.drawable.center_new;
+                break;
+        }
+        eyesView.setImageResource(openEyeResource);
     }
+*/
 }

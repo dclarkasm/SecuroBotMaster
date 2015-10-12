@@ -45,10 +45,6 @@ public class SecuroBotMasterMain extends Activity {
     private SystemUiHider mSystemUiHider;
 
     //**********************************************
-    ImageView leftEye;
-    ImageView rightEye;
-    int lEResource;
-    int rEResource;
     ImageView eyesView;
     private Handler mHandler;
     Random r = new Random();
@@ -135,16 +131,6 @@ public class SecuroBotMasterMain extends Activity {
 //**************************************************************************************************
                                 //SecuroBot setup stuff
 //**************************************************************************************************
-        /*
-        //left
-        leftEye = (ImageView) findViewById(R.id.leftEye);
-        lEResource = R.drawable.blueeyesopenleft;
-        leftEye.setImageResource(lEResource);
-        //right
-        rightEye = (ImageView) findViewById(R.id.rightEye);
-        rEResource = R.drawable.blueeyesopenright;
-        rightEye.setImageResource(rEResource);
-        */
         eyesView = (ImageView) findViewById(R.id.eyes);
 
         mHandler = new Handler();
@@ -251,33 +237,4 @@ public class SecuroBotMasterMain extends Activity {
         eyesView.setImageResource(openEyeResource);
     }
 
-
-    /*
-    public void changeEyes(){
-        Log.d("eyes", "eyeChooser: " + eyeChooser);
-        int eyeChooser = r.nextInt(6-0);
-
-        switch(eyeChooser) {
-            case 0:
-                openEyeResource = R.drawable.center_new;
-                break;
-            case 1:
-                openEyeResource = R.drawable.left_new;
-                break;
-            case 2:
-                openEyeResource = R.drawable.left_new;
-                break;
-            case 3:
-                openEyeResource = R.drawable.right_new;
-                break;
-            case 4:
-                openEyeResource = R.drawable.up_new;
-                break;
-            default:
-                openEyeResource = R.drawable.center_new;
-                break;
-        }
-        eyesView.setImageResource(openEyeResource);
-    }
-*/
 }
